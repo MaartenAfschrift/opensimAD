@@ -9,10 +9,15 @@ import pandas as pd
 import platform
 import urllib.request
 import zipfile
+from scipy.io import savemat
+
+# ToDo: export linear velocities as well
+
 
 def generateExternalFunction(pathOpenSimModel, outputDir, pathID,
                              outputFilename='F',
-                             compiler="Visual Studio 15 2017 Win64"):
+                             compiler="Visual Studio 15 2017 Win64",
+                             boolexportmat=False):
     
     # %% Paths.
     os.makedirs(outputDir, exist_ok=True)
@@ -93,8 +98,8 @@ def generateExternalFunction(pathOpenSimModel, outputDir, pathID,
         f.write('constexpr int NX = nCoordinates*2; \n')
         f.write('constexpr int NU = nCoordinates; \n')
         
-        # Residuals (joint torques), 3D GRFs, GRMs, and body origins.
-        nOutputs = nCoordinates + 3*(2+2+nBodies)
+        # Residuals (joint torques), 3D GRFs, GRMs, body origins and body velocities.
+        nOutputs = nCoordinates + 3*(2+2+nBodies+nBodies)
         f.write('constexpr int NR = %i; \n\n' % (nOutputs))
     
         f.write('template<typename T> \n')
@@ -429,6 +434,16 @@ def generateExternalFunction(pathOpenSimModel, outputDir, pathID,
                 continue            
             f.write('\tVec3 %s_or = %s->getPositionInGround(*state);\n' % (c_body_name, c_body_name))
         f.write('\n')
+
+        # Get body origin velocities
+        f.write('\t/// Body velocities.\n')
+        for i in range(bodySet.getSize()):
+            c_body = bodySet.get(i)
+            c_body_name = c_body.getName()
+            if (c_body_name == 'patella_l' or c_body_name == 'patella_r'):
+                continue
+            f.write('\tVec3 %s_or_dot = %s->getLinearVelocityInGround(*state);\n' % (c_body_name, c_body_name))
+        f.write('\n')
             
         # Get GRFs.
         f.write('\t/// Ground reaction forces.\n')
@@ -533,6 +548,22 @@ def generateExternalFunction(pathOpenSimModel, outputDir, pathID,
             F_map['body_origins'][c_body_name] = range(count_acc+count*3, count_acc+count*3+3)
             count += 1
         count_acc += 3*count
+
+        # export the body velocities
+        f.write('\t/// Body velocities.\n')
+        F_map['body_velocities'] = {}
+        count = 0
+        for i in range(bodySet.getSize()):
+            c_body = bodySet.get(i)
+            c_body_name = c_body.getName()
+            if (c_body_name == 'patella_l' or c_body_name == 'patella_r'):
+                continue
+            f.write('\tfor (int i = 0; i < 3; ++i) res[0][i + %i] = value<T>(%s_or_dot[i]);\n' % (
+            count_acc + count * 3, c_body_name))
+            F_map['body_velocities'][c_body_name] = range(count_acc + count * 3, count_acc + count * 3 + 3)
+            count += 1
+        count_acc += 3 * count
+
             
         f.write('\n')
         f.write('\treturn 0;\n')
@@ -555,6 +586,13 @@ def generateExternalFunction(pathOpenSimModel, outputDir, pathID,
         
         # Save dict
         np.save(pathOutputMap, F_map)
+
+        # Export dict to mat file
+        if boolexportmat == True:
+            pathOutputMap_mat = os.path.join(outputDir, outputFilename + "_map.mat")
+            savemat(pathOutputMap_mat, F_map)
+
+
         
     # %% Build external Function (.dll file).
     buildExternalFunction(outputFilename, outputDir, 3*nCoordinates,
