@@ -31,6 +31,9 @@ This workflow is not limited to full body models. [Any OpenSim model](https://us
 ### Troubleshooting
 - The code generates and runs .exe files, which can cause troubles with security policies. On KU Leuven GBW computers, run opensimAD from the C:/GBW_MyPrograms folder to prevent issues with group policy.
 - When getting an error message containing "opensim" or "simbody", check your [OpenSim installation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab) and path settings are correct.
+- Compilation uses unique temporary directories and short internal target names to avoid Visual Studio's 260-character intermediate-path limit. Public filenames, CasADi function names, and input/output metadata remain unchanged. Temporary builds are removed on success or failure, and MATLAB's working directory is restored.
+- The build root defaults to MATLAB's `tempdir`. To use a shorter directory or a location where security policies permit executables, create that directory and set `setenv('OPENSIMAD_BUILD_ROOT', 'C:\your\short\buildroot')` before conversion. The directory must already exist. An excessively long build root is rejected before compilation. Model, SDK, and final output paths must still be accessible to the toolchain.
+- Failed build commands report their stage, exit code, command, and captured output, even with verbose mode disabled. Resolve the first reported failure before retrying.
 
 ## opensimAD workflow
 

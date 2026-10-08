@@ -195,6 +195,9 @@ function [] = generateExternalFunction(pathOpenSimModel, outputDir,...
 % Original date: 8/May/2023
 % --------------------------------------------------------------------------
 
+oldDir = pwd;
+restoreDir = onCleanup(@() cd(oldDir));
+
 %% Write the cpp file.
 writeCppFile(pathOpenSimModel, outputDir, outputFilename,...
     jointsOrder, coordinatesOrder, input3DBodyForces, input3DBodyMoments,...
@@ -204,6 +207,7 @@ writeCppFile(pathOpenSimModel, outputDir, outputFilename,...
 
 %% Build expression graph (foo.py)
 [fooPath] = buildExpressionGraph(outputFilename, outputDir, compiler, verboseMode);
+cleanupBuild = onCleanup(@() cleanupBuildWorkspace(fooPath, oldDir));
 
 %% Generate code with expression graph and derivative information (foo_jac.c)
 load(fullfile(outputDir, [outputFilename, '_IO.mat']),'IO');
@@ -227,6 +231,7 @@ if verify_ID
 end
 
 %% Clean-up
-removeAllTempFiles(outputFilename);
+cd(oldDir);
+clear cleanupBuild;
 
 end
