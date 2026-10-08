@@ -1,4 +1,4 @@
-function [] = buildExternalFunction(fooPath, outputFilename, outputDir, compiler, verbose_mode)
+function [] = buildExternalFunction(fooPath, outputFilename, outputDir, compiler, verbose_mode, buildRoot)
 % --------------------------------------------------------------------------
 % buildExternalFunction
 %   Compiles the expression graph (foo_jac.c) into an external function (.dll)
@@ -41,12 +41,12 @@ function [] = buildExternalFunction(fooPath, outputFilename, outputDir, compiler
 % --------------------------------------------------------------------------
 
 %% Build in a separate short workspace, also when called directly.
+if nargin < 6, buildRoot = []; end
 oldDir = pwd;
 restoreDir = onCleanup(@() cd(oldDir));
 [pathUtilities,~,~] = fileparts(mfilename('fullpath'));
 [pathMain,~,~] = fileparts(pathUtilities);
-pathBuild = createBuildWorkspace();
-cleanupBuild = onCleanup(@() cleanupBuildWorkspace(pathBuild, oldDir));
+pathBuild = createBuildWorkspace(buildRoot, 'buildExternalFunction');
 pathInstall = fullfile(pathBuild, 'install');
 copyfile(fullfile(pathMain, 'buildExternalFunction', 'CMakeLists.txt'), pathBuild);
 copyfile(fullfile(fooPath, 'foo_jac.c'), pathBuild);
@@ -65,4 +65,5 @@ requireBuildFile(pathLib, 'External function compilation');
 cd(oldDir);
 copyfile(pathDll, outputDir);
 copyfile(pathLib, outputDir);
+cleanupBuildWorkspace(pathBuild, oldDir); % Remove only after success.
 end

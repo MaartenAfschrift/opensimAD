@@ -1,5 +1,5 @@
 function [pathFoo] = buildExpressionGraph(outputFilename,...
-    outputDir, compiler, verbose_mode)
+    outputDir, compiler, verbose_mode, buildRoot)
 % --------------------------------------------------------------------------
 % buildExpressionGraph
 %   Generates an expression graph and saves it as python code (foo.py)
@@ -41,12 +41,13 @@ function [pathFoo] = buildExpressionGraph(outputFilename,...
 % --------------------------------------------------------------------------
 
 %% set paths
+if nargin < 5, buildRoot = []; end
 oldDir = pwd;
 restoreDir = onCleanup(@() cd(oldDir));
 [pathUtilities,~,~] = fileparts(mfilename('fullpath'));
 [pathMain,~,~] = fileparts(pathUtilities);
 pathBuildExpressionGraph = fullfile(pathMain, 'buildExpressionGraph');
-pathBuild = createBuildWorkspace();
+pathBuild = createBuildWorkspace(buildRoot, 'buildExpressionGraph');
 pathFoo = pathBuild;
 try
     copyfile(fullfile(outputDir, [outputFilename '.cpp']), fullfile(pathBuild, 'graph.cpp'));
@@ -68,7 +69,10 @@ try
     t0 = tic;
     while isfile(lockFile)
         if toc(t0) > 300
-            error('opensimAD:LockTimeout', 'Timed out waiting for %s.', lockFile);
+            error('opensimAD:LockTimeout', ...
+                ['opensimAD timed out. Another instance of opensimAD took too ', ...
+                'long to generate foo.py, or failed to delete its lockFile when done.\n', ...
+                'Lock file: %s'], lockFile);
         end
         pause(1);
     end
@@ -90,7 +94,6 @@ try
     cd(oldDir);
 catch ME
     cd(oldDir);
-    rmdir(pathBuild, 's');
     rethrow(ME);
 end
 end
