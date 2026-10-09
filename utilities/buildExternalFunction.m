@@ -41,13 +41,18 @@ function [] = buildExternalFunction(fooPath, outputFilename, outputDir, compiler
 % --------------------------------------------------------------------------
 
 %% Build in a separate short workspace, also when called directly.
-if nargin < 6, buildRoot = []; end
+% build directory as optional input argument
+if nargin < 6
+    buildRoot = [];
+end
+% path information
 oldDir = pwd;
 restoreDir = onCleanup(@() cd(oldDir));
 [pathUtilities,~,~] = fileparts(mfilename('fullpath'));
 [pathMain,~,~] = fileparts(pathUtilities);
 pathBuild = createBuildWorkspace(buildRoot, 'buildExternalFunction');
 pathInstall = fullfile(pathBuild, 'install');
+% copy files to build location
 copyfile(fullfile(pathMain, 'buildExternalFunction', 'CMakeLists.txt'), pathBuild);
 copyfile(fullfile(fooPath, 'foo_jac.c'), pathBuild);
 cd(pathBuild);
@@ -60,10 +65,13 @@ runBuildCommand('cmake --build . --config RelWithDebInfo --target install', ...
     'External function compilation and installation', verbose_mode);
 pathDll = fullfile(pathInstall, 'bin', [outputFilename '.dll']);
 pathLib = fullfile(pathInstall, 'lib', [outputFilename '.lib']);
+% error messages when build files were not generated
 requireBuildFile(pathDll, 'External function compilation');
 requireBuildFile(pathLib, 'External function compilation');
+% copy files to desired directory
 cd(oldDir);
 copyfile(pathDll, outputDir);
 copyfile(pathLib, outputDir);
-cleanupBuildWorkspace(pathBuild, oldDir); % Remove only after success.
+% clean up build dir (only after success)
+cleanupBuildWorkspace(pathBuild, oldDir);
 end

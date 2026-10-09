@@ -137,10 +137,16 @@ secondOrderDerivatives = false;
 % save some time.
 noDll = true;
 
+% optional temporary build directory as input argument
+% ( you  might run into character length problem when your build path has
+% too many characters ("e.g.
+% C:\folder1\folder2\folderwithveryveryverylongname3")
+build_directory = 'C:\temp';
+
 %% Call generateExternalFunction function
 generateExternalFunction(pathOpenSimModel, outputDir, jointsOrder,...
     coordinatesOrder, input3DBodyForces, input3DBodyMoments,...
     export3DPositions, export3DOrientations,...
     export3DVelocities, export3DVelocitiesProjGround, exportGRFs,...
     exportGRMs, exportSeparateGRFs, exportContactPowers, outputFilename, compiler,...
-    verbose_mode, verify_ID, secondOrderDerivatives, noDll);
+    verbose_mode, verify_ID, secondOrderDerivatives, noDll, build_directory);
