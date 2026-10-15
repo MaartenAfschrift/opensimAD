@@ -50,10 +50,10 @@ outputDir = fullfile(pathMain, 'examples');
 outputFilename = 'F_test';
 
 % Compiler
-compiler = 'Visual Studio 17 2022';
+compiler = 'Visual Studio 18 2026';
 
 % Print information to the command window
-verbose_mode = false;
+verbose_mode = true;
 
 % Verify the generated function
 verify_ID = true;
@@ -135,7 +135,7 @@ secondOrderDerivatives = false;
 % Do not create an external function (.dll and .lib)
 % If you only want to use the serialised function (.casadi), this option cn
 % save some time.
-noDll = false;
+noDll = true;
 
 %% Call generateExternalFunction function
 generateExternalFunction(pathOpenSimModel, outputDir, jointsOrder,...

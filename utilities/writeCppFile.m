@@ -454,7 +454,7 @@ for i = 0:jointSet.getSize()-1
                     elseif c_nCoeffs == 5
                         fprintf(fid, '\tosim_double_adouble st_%s_%i_coeffs[%i] = {%.20f, %.20f, %.20f, %.20f, %.20f}; \n', c_joint.getName(), coord, c_nCoeffs, dofSel_f_obj_f_coeffs(1), dofSel_f_obj_f_coeffs(2), dofSel_f_obj_f_coeffs(3), dofSel_f_obj_f_coeffs(4), dofSel_f_obj_f_coeffs(5));
                     elseif c_nCoeffs == 7
-                        fprintf(fid, '\tosim_double_adouble st_%s_%i_coeffs[%i] = {%.20f, %.20f, %.20f, %.20f, %.20f, %.20f, %.20f}; \n', c_joint.getName(), coord, c_nCoeffs, dofSel_f_coeffs(1), dofSel_f_coeffs(2), dofSel_f_coeffs(3), dofSel_f_coeffs(4), dofSel_f_coeffs(5), dofSel_f_coeffs(6), dofSel_f_coeffs(7));
+                        fprintf(fid, '\tosim_double_adouble st_%s_%i_coeffs[%i] = {%.20f, %.20f, %.20f, %.20f, %.20f, %.20f, %.20f}; \n', c_joint.getName(), coord, c_nCoeffs, dofSel_f_obj_f_coeffs(1), dofSel_f_obj_f_coeffs(2), dofSel_f_obj_f_coeffs(3), dofSel_f_obj_f_coeffs(4), dofSel_f_obj_f_coeffs(5), dofSel_f_obj_f_coeffs(6), dofSel_f_obj_f_coeffs(7));
                     else
                         error('TODO. Current implementation supports polynomials of order 2, 3, 4, 5, and 7.');
                     end

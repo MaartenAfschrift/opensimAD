@@ -1,4 +1,4 @@
-function testBuildPaths(fullModel)
+function testBuildPaths(fullModel, compiler)
 % Run from the repository: addpath('tests'); testBuildPaths(false)
 % Use true for OpenSim/CasADi numerical and inverse-dynamics checks.
 if nargin == 0, fullModel = false; end
@@ -15,7 +15,7 @@ setenv('OPENSIMAD_BUILD_ROOT', buildRoot);
 outputDir = fullfile(testRoot, 'output with spaces', repmat('deep_', 1, 12));
 mkdir(outputDir);
 name = 'F_Falisse_et_al_2022_slope07_torso125pct';
-compiler = 'Visual Studio 16 2019';
+if nargin < 2, compiler = 'Visual Studio 16 2019'; end
 writeFile(fullfile(outputDir, [name '.cpp']), ...
     sprintf('#include <fstream>\nint main(){std::ofstream("foo.py") << "graph"; return 0;}\n'));
 foo = buildExpressionGraph(name, outputDir, compiler, false);

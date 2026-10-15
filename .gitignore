@@ -12,3 +12,10 @@ InverseDynamics/*
 !InverseDynamics/DefaultPosition.mot
 !InverseDynamics/SetupID
 
+
+# Python/build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/

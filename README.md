@@ -100,3 +100,50 @@ When running opensimAD, you can get an error from genF.exe that it cannot find c
 
 ## Source code
 The libraries in `./opensimAD-install` were compiled from [here](https://github.com/antoinefalisse/opensim-core/tree/AD-recorder-work-py-install).
+
+## Python workflow (Windows)
+
+The Python implementation supports the MATLAB options, including body loads,
+relative orientations, station velocities, per-contact forces/powers, full
+3D gravity, multivariate joint polynomials and optional second derivatives.
+It uses the same bundled recorder SDK and CMake projects. MATLAB is not required
+for Python conversion.
+
+Use Python 3.10 or later with OpenSim's Python bindings, CasADi, NumPy and SciPy.
+Install OpenSim through its supported conda distribution; it is intentionally
+not declared as a PyPI dependency. This checkout was validated with Python
+3.10.20, OpenSim 4.5.2, CasADi 3.7.2 and Visual Studio 2026. CMake and
+`opensim-cmd` must be on PATH when inverse-dynamics verification is enabled.
+
+Run `python main.py` from the repository, or install the checkout for use from
+other directories: `python -m pip install --no-deps -e .`. Use an **editable**
+installation: the SDK and CMake resources remain in this repository and are
+not bundled into a Python wheel.
+
+```python
+from opensimad import generate_external_function
+import casadi as ca
+
+result = generate_external_function(
+    r'C:\models\model.osim', r'C:\results',
+    output_filename='F_model', no_dll=True,
+    export_3d_positions=[dict(body='tibia_l', point_in_body=[0, -.012, 0], name='left_shin')],
+)
+F = ca.Function.load(result['artifacts']['casadi'])
+io = result['io']  # Zero-based indices; input.nInputs remains a count.
+# With no_dll=False: F = ca.external('F', result['artifacts']['dll'])
+```
+
+A conversion returns `artifacts`, `io`, and `verification`. Both output forms
+use a single packed column-vector input. The JSON/Python map uses zero-based
+indices; `_IO.mat` preserves MATLAB's one-based IO structure. Set
+`verify_id=False` only when intentionally skipping the static independent
+OpenSim IDTool check; verification failures raise exceptions.
+
+See [Python parity, limitations and tests](PYTHON_PARITY.md) for exact I/O
+ordering, mathematical conventions, deliberate bug corrections, build behavior,
+and commands for running the unit/integration and fresh MATLAB parity suites.
+
+If an IDE's PATH omits CMake, the Python runner also checks its standard Windows
+installation folders. For a custom installation, set `OPENSIMAD_CMAKE` to the
+full path of `cmake.exe`. An explicit override takes precedence over PATH.

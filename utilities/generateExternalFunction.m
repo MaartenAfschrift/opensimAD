@@ -227,7 +227,7 @@ end
 % Run ID with the .osim file and verify that we can get the same torques as
 % with the external function.
 if verify_ID
-    VerifyInverseDynamics(pathOpenSimModel, outputDir, outputFilename, verboseMode);
+    VerifyInverseDynamics(pathOpenSimModel, outputDir, outputFilename, verboseMode, noDll);
 end
 
 %% Clean-up
